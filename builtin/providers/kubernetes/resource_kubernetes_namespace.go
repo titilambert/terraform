@@ -24,7 +24,7 @@ func resourceKubernetesNamespace() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"metadata": metadataSchema("namespace"),
+			"metadata": metadataSchema("namespace", true),
 		},
 	}
 }
