@@ -1144,6 +1144,11 @@ func TestMetaBackend_configuredChangeCopy_multiToSingle(t *testing.T) {
 	if _, err := os.Stat(envPath); err != nil {
 		t.Fatal("env should exist")
 	}
+
+	// Verify we are now in the default env, or we may not be able to access the new backend
+	if env := m.Env(); env != backend.DefaultStateName {
+		t.Fatal("using non-default env with single-env backend")
+	}
 }
 
 // Changing a configured backend that supports multi-state to a
@@ -2858,12 +2863,12 @@ func TestMetaBackend_planBackendEmptyDir(t *testing.T) {
 		testFixturePath("backend-plan-backend-empty-config"),
 		DefaultDataDir, DefaultStateFilename))
 	planState := original.DeepCopy()
-	planState.Backend = backendState.Backend
 
 	// Create the plan
 	plan := &terraform.Plan{
-		Module: testModule(t, "backend-plan-backend-empty-config"),
-		State:  planState,
+		Module:  testModule(t, "backend-plan-backend-empty-config"),
+		State:   planState,
+		Backend: backendState.Backend,
 	}
 
 	// Setup the meta
@@ -2960,12 +2965,12 @@ func TestMetaBackend_planBackendMatch(t *testing.T) {
 		testFixturePath("backend-plan-backend-empty-config"),
 		DefaultDataDir, DefaultStateFilename))
 	planState := original.DeepCopy()
-	planState.Backend = backendState.Backend
 
 	// Create the plan
 	plan := &terraform.Plan{
-		Module: testModule(t, "backend-plan-backend-empty-config"),
-		State:  planState,
+		Module:  testModule(t, "backend-plan-backend-empty-config"),
+		State:   planState,
+		Backend: backendState.Backend,
 	}
 
 	// Setup the meta
@@ -3062,15 +3067,15 @@ func TestMetaBackend_planBackendMismatchLineage(t *testing.T) {
 		testFixturePath("backend-plan-backend-empty-config"),
 		DefaultDataDir, DefaultStateFilename))
 	planState := original.DeepCopy()
-	planState.Backend = backendState.Backend
 
 	// Get the real original
 	original = testStateRead(t, "local-state.tfstate")
 
 	// Create the plan
 	plan := &terraform.Plan{
-		Module: testModule(t, "backend-plan-backend-empty-config"),
-		State:  planState,
+		Module:  testModule(t, "backend-plan-backend-empty-config"),
+		State:   planState,
+		Backend: backendState.Backend,
 	}
 
 	// Setup the meta
