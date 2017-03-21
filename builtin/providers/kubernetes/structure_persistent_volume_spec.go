@@ -2,7 +2,6 @@ package kubernetes
 
 import (
 	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/types"
 
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -223,32 +222,6 @@ func flattenNFSVolumeSource(in *v1.NFSVolumeSource) []interface{} {
 	return []interface{}{att}
 }
 
-func flattenObjectReference(in *v1.ObjectReference) []interface{} {
-	att := make(map[string]interface{})
-	if in.Kind != "" {
-		att["kind"] = in.Kind
-	}
-	if in.Namespace != "" {
-		att["namespace"] = in.Namespace
-	}
-	if in.Name != "" {
-		att["name"] = in.Name
-	}
-	if in.UID != "" {
-		att["uid"] = in.UID
-	}
-	if in.APIVersion != "" {
-		att["api_version"] = in.APIVersion
-	}
-	if in.ResourceVersion != "" {
-		att["resource_version"] = in.ResourceVersion
-	}
-	if in.FieldPath != "" {
-		att["field_path"] = in.FieldPath
-	}
-	return []interface{}{att}
-}
-
 func flattenPersistentVolumeSource(in v1.PersistentVolumeSource) []interface{} {
 	att := make(map[string]interface{})
 	if in.GCEPersistentDisk != nil {
@@ -314,9 +287,6 @@ func flattenPersistentVolumeSpec(in v1.PersistentVolumeSpec) []interface{} {
 	att["persistent_volume_source"] = flattenPersistentVolumeSource(in.PersistentVolumeSource)
 	if len(in.AccessModes) > 0 {
 		att["access_modes"] = flattenPersistentVolumeAccessModes(in.AccessModes)
-	}
-	if in.ClaimRef != nil {
-		att["claim_ref"] = flattenObjectReference(in.ClaimRef)
 	}
 	if in.PersistentVolumeReclaimPolicy != "" {
 		att["persistent_volume_reclaim_policy"] = in.PersistentVolumeReclaimPolicy
@@ -669,36 +639,6 @@ func expandNFSVolumeSource(l []interface{}) *v1.NFSVolumeSource {
 	return obj
 }
 
-func expandObjectReference(l []interface{}) *v1.ObjectReference {
-	if len(l) == 0 || l[0] == nil {
-		return &v1.ObjectReference{}
-	}
-	in := l[0].(map[string]interface{})
-	obj := &v1.ObjectReference{}
-	if v, ok := in["kind"].(string); ok {
-		obj.Kind = v
-	}
-	if v, ok := in["namespace"].(string); ok {
-		obj.Namespace = v
-	}
-	if v, ok := in["name"].(string); ok {
-		obj.Name = v
-	}
-	if v, ok := in["uid"].(types.UID); ok {
-		obj.UID = v
-	}
-	if v, ok := in["api_version"].(string); ok {
-		obj.APIVersion = v
-	}
-	if v, ok := in["resource_version"].(string); ok {
-		obj.ResourceVersion = v
-	}
-	if v, ok := in["field_path"].(string); ok {
-		obj.FieldPath = v
-	}
-	return obj
-}
-
 func expandPersistentVolumeSource(l []interface{}) v1.PersistentVolumeSource {
 	if len(l) == 0 || l[0] == nil {
 		return v1.PersistentVolumeSource{}
@@ -777,9 +717,6 @@ func expandPersistentVolumeSpec(l []interface{}) (v1.PersistentVolumeSpec, error
 	}
 	if v, ok := in["access_modes"].(*schema.Set); ok && v.Len() > 0 {
 		obj.AccessModes = expandPersistentVolumeAccessModes(v.List())
-	}
-	if v, ok := in["claim_ref"].([]interface{}); ok && len(v) > 0 {
-		obj.ClaimRef = expandObjectReference(v)
 	}
 	if v, ok := in["persistent_volume_reclaim_policy"].(v1.PersistentVolumeReclaimPolicy); ok {
 		obj.PersistentVolumeReclaimPolicy = v

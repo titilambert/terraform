@@ -32,7 +32,7 @@ func resourceKubernetesPersistentVolume() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"access_modes": {
 							Type:        schema.TypeSet,
-							Description: "AccessModes contains all ways the volume can be mounted. More info: http://kubernetes.io/docs/user-guide/persistent-volumes#access-modes",
+							Description: "Contains all ways the volume can be mounted. More info: http://kubernetes.io/docs/user-guide/persistent-volumes#access-modes",
 							Required:    true,
 							Elem:        &schema.Schema{Type: schema.TypeString},
 							Set:         schema.HashString,
@@ -44,51 +44,6 @@ func resourceKubernetesPersistentVolume() *schema.Resource {
 							Elem:         schema.TypeString,
 							ValidateFunc: validateResourceList,
 						},
-						"claim_ref": {
-							Type:        schema.TypeList,
-							Description: "ClaimRef is part of a bi-directional binding between PersistentVolume and PersistentVolumeClaim. Expected to be non-nil when bound. claim.VolumeName is the authoritative bind between PV and PVC. More info: http://kubernetes.io/docs/user-guide/persistent-volumes#binding",
-							Optional:    true,
-							MaxItems:    1,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"api_version": {
-										Type:        schema.TypeString,
-										Description: "API version of the referent.",
-										Optional:    true,
-									},
-									"field_path": {
-										Type:        schema.TypeString,
-										Description: "If referring to a piece of an object instead of an entire object, this string should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2]. For example, if the object reference is to a container within a pod, this would take on a value like: \"spec.containers{name}\" (where \"name\" refers to the name of the container that triggered the event) or if no container name is specified \"spec.containers[2]\" (container with index 2 in this pod). This syntax is chosen only to have some well-defined way of referencing a part of an object.",
-										Optional:    true,
-									},
-									"kind": {
-										Type:        schema.TypeString,
-										Description: "Kind of the referent. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#types-kinds",
-										Optional:    true,
-									},
-									"name": {
-										Type:        schema.TypeString,
-										Description: "Name of the referent. More info: http://kubernetes.io/docs/user-guide/identifiers#names",
-										Optional:    true,
-									},
-									"namespace": {
-										Type:        schema.TypeString,
-										Description: "Namespace of the referent. More info: http://kubernetes.io/docs/user-guide/namespaces",
-										Optional:    true,
-									},
-									"resource_version": {
-										Type:        schema.TypeString,
-										Description: "Specific resourceVersion to which this reference is made, if any. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#concurrency-control-and-consistency",
-										Optional:    true,
-									},
-									"uid": {
-										Type:        schema.TypeString,
-										Description: "UID of the referent. More info: http://kubernetes.io/docs/user-guide/identifiers#uids",
-										Optional:    true,
-									},
-								},
-							},
-						},
 						"persistent_volume_reclaim_policy": {
 							Type:        schema.TypeString,
 							Description: "What happens to a persistent volume when released from its claim. Valid options are Retain (default) and Recycle. Recycling must be supported by the volume plugin underlying this persistent volume. More info: http://kubernetes.io/docs/user-guide/persistent-volumes#recycling-policy",
@@ -97,10 +52,10 @@ func resourceKubernetesPersistentVolume() *schema.Resource {
 						},
 						"persistent_volume_source": {
 							Type:        schema.TypeList,
-							Description: "PersistentVolumeSpec is the specification of a persistent volume.",
+							Description: "The specification of a persistent volume.",
 							Required:    true,
 							MaxItems:    1,
-							Elem:        volumeSourceSchema,
+							Elem:        persistentVolumeSourceSchema(),
 						},
 					},
 				},

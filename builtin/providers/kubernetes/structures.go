@@ -3,6 +3,7 @@ package kubernetes
 import (
 	"fmt"
 	"log"
+	"net/url"
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -26,7 +27,7 @@ func expandMetadata(in []interface{}) api.ObjectMeta {
 	}
 	m := in[0].(map[string]interface{})
 
-	meta.Annotations = expandStringMap(m["annotations"].(map[string]interface{}))
+	meta.Annotations = filterAnnotations(expandStringMap(m["annotations"].(map[string]interface{})))
 	meta.Labels = expandStringMap(m["labels"].(map[string]interface{}))
 
 	if v, ok := m["generate_name"]; ok {
@@ -52,7 +53,7 @@ func expandStringMap(m map[string]interface{}) map[string]string {
 
 func flattenMetadata(meta api.ObjectMeta) []map[string]interface{} {
 	m := make(map[string]interface{})
-	m["annotations"] = meta.Annotations
+	m["annotations"] = filterAnnotations(meta.Annotations)
 	if meta.GenerateName != "" {
 		m["generate_name"] = meta.GenerateName
 	}
@@ -142,4 +143,22 @@ func expandPersistentVolumeAccessModes(s []interface{}) []api.PersistentVolumeAc
 
 func ptrToAzureDataDiskCachingMode(in api.AzureDataDiskCachingMode) *api.AzureDataDiskCachingMode {
 	return &in
+}
+
+func filterAnnotations(m map[string]string) map[string]string {
+	for k, _ := range m {
+		if isInternalAnnotationKey(k) {
+			delete(m, k)
+		}
+	}
+	return m
+}
+
+func isInternalAnnotationKey(annotationKey string) bool {
+	u, err := url.Parse("//" + annotationKey)
+	if err == nil && strings.HasSuffix(u.Hostname(), "kubernetes.io") {
+		return true
+	}
+
+	return false
 }

@@ -1,12 +1,14 @@
 package kubernetes
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
+	a "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/errors"
 	api "k8s.io/kubernetes/pkg/api/v1"
 	kubernetes "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
@@ -205,13 +207,16 @@ func resourceKubernetesPersistentVolumeClaimUpdate(d *schema.ResourceData, meta 
 		ObjectMeta: metadata,
 		Spec:       spec,
 	}
-	log.Printf("[INFO] Updating persistent volume claim: %#v", volume)
-	out, err := conn.CoreV1().PersistentVolumeClaims(namespace).Update(&volume)
+	data, err := json.Marshal(volume)
+	if err != nil {
+		return err
+	}
+	log.Printf("[INFO] Updating persistent volume claim: %#v", string(data))
+	out, err := conn.CoreV1().PersistentVolumeClaims(namespace).Patch(name, a.StrategicMergePatchType, data)
 	if err != nil {
 		return err
 	}
 	log.Printf("[INFO] Submitted updated persistent volume claim: %#v", out)
-	d.SetId(out.Name)
 
 	return resourceKubernetesPersistentVolumeClaimRead(d, meta)
 }
